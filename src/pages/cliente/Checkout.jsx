@@ -11,9 +11,12 @@ export default function Checkout() {
   const { openCheckout } = useCulqiCheckout();
   const navigate = useNavigate();
 
-  // Si no hay items en el carrito, o no esta logueado, redirigir
+  // Redirecciones
   if (!isAuthenticated) return <Navigate to="/login" />;
   if (items.length === 0) return <Navigate to="/" />;
+
+  // ✅ Validación: el usuario debe tener dirección para comprar
+  const hasAddress = user?.direccion && user.direccion.trim().length > 0;
 
   return (
     <StoreLayout>
@@ -26,7 +29,7 @@ export default function Checkout() {
             <h1 className="text-4xl md:text-5xl font-display font-extrabold text-white mb-4 tracking-tight">
               Finalizar <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-400">Compra</span>
             </h1>
-            <p className="text-surface-400 text-lg">Estas a un paso de obtener tu nuevo hardware.</p>
+            <p className="text-surface-400 text-lg">Estás a un paso de obtener tu nuevo hardware.</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -101,9 +104,30 @@ export default function Checkout() {
                 </div>
 
                 <div className="space-y-4">
+                  {/* ✅ Mensaje si no tiene dirección */}
+                  {!hasAddress && (
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-2">
+                      <p className="text-amber-500 text-sm font-medium">
+                        Para realizar un pedido, debes agregar una dirección de envío en tu perfil.
+                      </p>
+                      <button
+                        onClick={() => navigate("/dashboard")}
+                        className="text-brand-400 text-sm font-semibold hover:underline mt-2"
+                      >
+                        Ir a mi perfil →
+                      </button>
+                    </div>
+                  )}
+
+                  {/* ✅ Botón de pago condicional */}
                   <button 
                     onClick={openCheckout}
-                    className="w-full relative overflow-hidden group bg-white text-slate-900 font-extrabold text-lg py-5 rounded-xl transition-all hover:scale-[1.02] hover:shadow-[0_0_30px_-5px_rgba(255,255,255,0.4)] active:scale-95 cursor-pointer"
+                    disabled={!hasAddress}
+                    className={`w-full relative overflow-hidden group bg-white text-slate-900 font-extrabold text-lg py-5 rounded-xl transition-all 
+                      ${hasAddress 
+                        ? 'hover:scale-[1.02] hover:shadow-[0_0_30px_-5px_rgba(255,255,255,0.4)] active:scale-95 cursor-pointer' 
+                        : 'opacity-50 cursor-not-allowed'
+                      }`}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-brand-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <span className="relative flex items-center justify-center gap-3">
